@@ -1,0 +1,129 @@
+services:
+  # ----------------------------------------
+  # 0. Database
+  # ----------------------------------------
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      - POSTGRES_DB=users_db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=topSecretPassword123!!!!!
+    ports:
+      - "5432:5432"
+    networks:
+      - prisma-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d users_db"]
+      interval: 5s
+      timeout: 2s
+      retries: 20
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    command: postgres -c listen_addresses='*'
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+  # ----------------------------------------
+  # 1. API Gateway (App) - External entry point
+  # ----------------------------------------
+  be_gateway:
+    build:
+      context: ./be_tasks-app
+      dockerfile: Dockerfile
+    container_name: be_gateway
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      AUTH_URL: http://be_auth:3003
+      USERS_URL: http://be_users:3001
+      TASKS_URL: http://be_tasks:3002
+    depends_on:
+      be_users:
+        condition: service_started
+      be_tasks:
+        condition: service_started
+    command: node dist/apps/tasks-api-gateway/main.js
+    networks:
+      - prisma-network
+  # ----------------------------------------
+  # 2. Users Microservice
+  # ----------------------------------------
+  be_users:
+    build:
+      context: ./be_tasks-app
+      dockerfile: Dockerfile
+    container_name: be_users
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      USERS_DATABASE_URL: postgres://user:topSecretPassword123!!!!!@db:5432/users_db
+    depends_on:
+      be_auth:
+        condition: service_started
+    command: sh -c "export TASKS_DATABASE_URL=$TASKS_DATABASE_URL && export DATABASE_URL=$USERS_DATABASE_URL && npx prisma migrate deploy --config apps/users/src/prisma/prisma.config.ts --schema apps/users/src/prisma/schema.prisma && npx prisma generate --config apps/users/src/prisma/prisma.config.ts --schema apps/users/src/prisma/schema.prisma && npx prisma db seed --config apps/users/src/prisma/prisma.config.ts && node dist/apps/users/main.js"
+    networks:
+      - prisma-network
+  # ----------------------------------------
+  # 3. Tasks Microservice
+  # ----------------------------------------
+  be_tasks:
+    build:
+      context: ./be_tasks-app
+      dockerfile: Dockerfile
+    container_name: be_tasks
+    environment:
+      NODE_ENV: production
+      PORT: 3002
+      TASKS_DATABASE_URL: postgres://user:topSecretPassword123!!!!!@db:5432/tasks_db
+    depends_on:
+      be_users:
+        condition: service_started
+    command: sh -c "export DATABASE_URL=$TASKS_DATABASE_URL && npx prisma migrate deploy --config apps/tasks/src/prisma/prisma.config.ts --schema apps/tasks/src/prisma/schema.prisma && npx prisma generate --config apps/tasks/src/prisma/prisma.config.ts --schema apps/tasks/src/prisma/schema.prisma  && npx prisma db seed --config apps/tasks/src/prisma/prisma.config.ts && node dist/apps/tasks/main.js"
+    networks:
+      - prisma-network
+
+  # ----------------------------------------
+  # 4. Auth Microservice
+  # ----------------------------------------
+  be_auth:
+    build:
+      context: ./be_tasks-app
+      dockerfile: Dockerfile
+    container_name: be_auth
+    environment:
+      NODE_ENV: production
+      PORT: 3003
+      AUTH_DATABASE_URL: postgres://user:topSecretPassword123!!!!!@db:5432/users_db
+      TASKS_DATABASE_URL: postgres://user:topSecretPassword123!!!!!@db:5432/tasks_db
+    depends_on:
+      db:
+        condition: service_healthy
+    command: sh -c "export DATABASE_URL=$TASKS_DATABASE_URL && node dist/apps/auth/main.js"
+    networks:
+      - prisma-network
+  # ----------------------------------------
+  # 5. Frontend Service (Next.js)
+  # ----------------------------------------
+  fe_app:
+    build:
+      context: ./fe_tasks-app
+      dockerfile: Dockerfile
+    container_name: frontend_app
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      NEXT_PUBLIC_API_URL: http://be_gateway:3000 
+    networks:
+      - prisma-network
+
+networks:
+  prisma-network:
+
+volumes:
+  postgres_data:

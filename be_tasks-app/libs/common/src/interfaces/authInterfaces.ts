@@ -1,4 +1,4 @@
-import { Task } from 'generated/prisma'
+import { Task } from '../../../../generated/prisma/client'
 
 export interface PaginatedTasks {
   tasks: Task[]

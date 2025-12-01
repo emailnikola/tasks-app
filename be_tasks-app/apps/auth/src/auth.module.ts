@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
 import { ConfigModule, ConfigService } from '@nestjs/config'
-import { ClientsModule, Transport } from '@nestjs/microservices'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
-import { USERS_SERVICE } from '@app/common'
+import { MicroserviceClientsModule } from 'libs/clients/microservice-clients.module'
 
 @Module({
   imports: [
+    MicroserviceClientsModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env'
@@ -16,23 +16,13 @@ import { USERS_SERVICE } from '@app/common'
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>(
-          'GATEWAY_JWT_SECRET',
-          'a-fallback-secret'
+          'JWT_SECRET',
+          'YOUR_VERY_STRONG_GATEWAY_SECRET_KEY'
         ),
         signOptions: { expiresIn: '1d' }
       }),
       inject: [ConfigService]
-    }),
-    ClientsModule.register([
-      {
-        name: USERS_SERVICE,
-        transport: Transport.TCP,
-        options: {
-          host: 'localhost',
-          port: 3001
-        }
-      }
-    ])
+    })
   ],
   controllers: [AuthController],
   providers: [AuthService]

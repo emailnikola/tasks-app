@@ -11,7 +11,7 @@ import {
 } from '../../../libs/common/src'
 import * as bcrypt from 'bcrypt'
 import { firstValueFrom } from 'rxjs'
-import { User } from 'generated/prisma'
+import { User } from '../../../generated/prisma/client'
 
 @Injectable()
 export class AuthService {

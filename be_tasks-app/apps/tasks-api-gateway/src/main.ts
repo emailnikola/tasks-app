@@ -2,14 +2,15 @@ import { NestFactory } from '@nestjs/core'
 import { TasksApiGatewayModule } from './app.module'
 
 async function bootstrap() {
+  const servicePort = parseInt(process.env.PORT || '3000', 10)
   const app = await NestFactory.create(TasksApiGatewayModule)
   app.enableCors({
-    origin: 'http://localhost:4000',
+    origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true
   })
-  await app.listen(process.env.port ?? 3000)
-  console.log('Main APP is listening on port 3000')
+  await app.listen(servicePort)
+  console.log(`Main APP is listening on port ${servicePort}`)
 }
 
 bootstrap().catch((err) => {

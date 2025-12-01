@@ -9,7 +9,7 @@ import { firstValueFrom } from 'rxjs'
 import { Request } from 'express'
 import { ClientProxy } from '@nestjs/microservices'
 import { AUTH_SERVICE, AUTH_PATTERNS } from '../../../../libs/common/src'
-import { User } from 'generated/prisma'
+import { User } from '../../../../generated/prisma/client'
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
