@@ -9,6 +9,7 @@ async function bootstrap() {
     credentials: true
   })
   await app.listen(process.env.port ?? 3000)
+  console.log('Main APP is listening on port 3000')
 }
 
 bootstrap().catch((err) => {

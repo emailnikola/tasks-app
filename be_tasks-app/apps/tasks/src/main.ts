@@ -13,6 +13,7 @@ async function bootstrap() {
     }
   )
   await app.listen()
+  console.log('Tasks Microservice is listening on port 3002')
 }
 bootstrap().catch((err) => {
   console.error('Application failed to start:', err)
