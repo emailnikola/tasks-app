@@ -119,6 +119,9 @@ services:
       NODE_ENV: production
       PORT: 4000
       NEXT_PUBLIC_API_URL: http://be_gateway:3000 
+    depends_on:
+      be_gateway:
+        condition: service_started
     networks:
       - prisma-network
 
