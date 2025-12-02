@@ -20,6 +20,7 @@ npm i
 cd ..
 
 cd be_tasks-app
+.demo.env -> .env
 npm i
 npx prisma generate --schema apps/users/src/prisma/schema.prisma
 npx prisma generate --schema apps/tasks/src/prisma/schema.prisma
@@ -32,14 +33,13 @@ docker-compose up --build
 ## RUN without Docker
 
 ```bash
-Start
+
 cd be_tasks-app
-
 npm i
-
+.demo.env -> .env
+Update .env
 npx prisma generate --schema apps/users/src/prisma/schema.prisma
 npx prisma generate --schema apps/tasks/src/prisma/schema.prisma
-
 Terminal 1 => npm run start app --watch
 Terminal 2 => npm run start users --watch
 Terminal 3 => npm run start tasks --watch
