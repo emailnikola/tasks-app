@@ -7,11 +7,15 @@ export interface Task {
   createdAt: string
 }
 
+export type Status = 'idle' | 'loading' | 'succeeded' | 'failed'
+
 export interface TasksState {
   tasks: Task[]
+  fetchStatus: Status
   totalCount: number
-  status: 'idle' | 'loading' | 'succeeded' | 'failed'
+  status: Status
   error: string | null
+  updateLoadingId: string | null
   shouldRefetch: boolean
 }
 

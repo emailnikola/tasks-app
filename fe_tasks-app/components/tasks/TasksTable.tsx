@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import {
   Button,
   Stack,
@@ -13,27 +12,15 @@ import {
   CloseButton,
   UnstyledButton
 } from '@mantine/core'
-import {
-  IconLogin2,
-  IconEdit,
-  IconTrash,
-  IconSelector,
-  IconChevronUp,
-  IconChevronDown
-} from '@tabler/icons-react'
+import { IconEdit, IconTrash } from '@tabler/icons-react'
 import { JSX, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import SortIcon from './SortIcon'
 import { fetchTasks, updateTask } from '../../store/tasksSlice'
 import { RootState, AppDispatch } from '../../store'
-import { FilterValue, Task, TaskQuery, TaskStatus } from '../../types/tasksTypes'
+import { FilterValue, Task, TaskQuery } from '../../types/tasksTypes'
 import { TasksTableProps } from '../../types/misc'
-
-const SortIcon = ({ sorted, reversed }: { sorted: boolean; reversed: boolean }): JSX.Element => {
-  if (!sorted) {
-    return <IconSelector size={14} style={{ opacity: 0.5 }} />
-  }
-  return reversed ? <IconChevronUp size={14} /> : <IconChevronDown size={14} />
-}
+import { getNextStatus } from '../../utils'
 
 export default function TasksTable({
   onAddTask,
@@ -42,21 +29,21 @@ export default function TasksTable({
 }: TasksTableProps): JSX.Element {
   const dispatch = useDispatch<AppDispatch>()
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated)
-  const { tasks, status, error, totalCount, shouldRefetch } = useSelector(
+  const { tasks, fetchStatus, totalCount, shouldRefetch, updateLoadingId } = useSelector(
     (state: RootState) => state.tasks
   )
   const [isClient, setIsClient] = useState(false)
-
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
 
   const pageSize = 10
   const [activePage, setActivePage] = useState(1)
   const [statusFilter, setStatusFilter] = useState<FilterValue>('ALL')
   const [searchFilter, setSearchFilter] = useState<string>('')
-  const [sortBy, setSortBy] = useState<keyof Task | null>('title')
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+  const [sortBy, setSortBy] = useState<keyof Task | null>('createdAt')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   const setPage = (selectedPage: number): void => {
     setActivePage(selectedPage)
@@ -83,7 +70,12 @@ export default function TasksTable({
     }
     setActivePage(1)
     if (sortBy === key) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+      if (sortDirection === 'desc') {
+        setSortBy('createdAt')
+        setSortDirection('desc')
+      } else {
+        setSortDirection('desc')
+      }
     } else {
       setSortBy(key)
       setSortDirection('asc')
@@ -123,16 +115,6 @@ export default function TasksTable({
     }
   }, [isClient, isAuthenticated, dispatch, QUERY_BODY, shouldRefetch])
 
-  const getNextStatus = (currentStatus: string): TaskStatus | null => {
-    if (currentStatus === 'TODO') {
-      return 'IN_PROGRESS'
-    }
-    if (currentStatus === 'IN_PROGRESS') {
-      return 'DONE'
-    }
-    return null
-  }
-
   const taskRows = useMemo(() => {
     const handleStatusClick = async (taskId: string, currentStatus: string): Promise<void> => {
       const nextStatus = getNextStatus(currentStatus)
@@ -140,87 +122,50 @@ export default function TasksTable({
         await dispatch(updateTask({ id: taskId, status: nextStatus }))
       }
     }
-    return tasks.map((task: Task) => (
-      <Table.Tr key={task.id}>
-        <Table.Td>{task.title}</Table.Td>
-        <Table.Td>
-          <Button
-            variant={task.status === 'TODO' ? 'outline' : 'filled'}
-            color={task.status === 'TODO' ? 'red' : task.status === 'DONE' ? 'green' : 'orange'}
-            onClick={() => void handleStatusClick(task.id, task.status)}
-          >
-            {task.status === 'IN_PROGRESS' ? 'DOING' : task.status}
-          </Button>
-        </Table.Td>
-        <Table.Td>
-          <ActionIcon variant="transparent" aria-label="Edit" onClick={() => onEditTask(task.id)}>
-            <IconEdit size={20} />
-          </ActionIcon>
-          <ActionIcon
-            variant="transparent"
-            color="red"
-            aria-label="Delete"
-            onClick={() => onDeleteTask(task.id)}
-          >
-            <IconTrash size={20} />
-          </ActionIcon>
-        </Table.Td>
-      </Table.Tr>
-    ))
-  }, [tasks, onEditTask, onDeleteTask, dispatch])
-
-  const renderStatusContent = (): JSX.Element | null => {
-    if (!isAuthenticated) {
-      // ... (authentication content)
+    return tasks.map((task: Task) => {
+      const isUpdating = updateLoadingId === task.id
       return (
-        <>
-          <Text size="lg" c="red">
-            Please authenticate to view your tasks.
-          </Text>
-          <Button size="xl" rightSection={<IconLogin2 size={24} />} component={Link} href="/login">
-            Login
-          </Button>
-        </>
+        <Table.Tr key={task.id}>
+          <Table.Td>{task.title}</Table.Td>
+          <Table.Td>
+            <Button
+              variant={task.status === 'TODO' ? 'outline' : 'filled'}
+              color={task.status === 'TODO' ? 'red' : task.status === 'DONE' ? 'green' : 'orange'}
+              onClick={() => void handleStatusClick(task.id, task.status)}
+              loading={isUpdating}
+              size="xs"
+            >
+              {task.status === 'IN_PROGRESS' ? 'DOING' : task.status}
+            </Button>
+          </Table.Td>
+          <Table.Td>
+            <ActionIcon variant="transparent" aria-label="Edit" onClick={() => onEditTask(task.id)}>
+              <IconEdit size={20} />
+            </ActionIcon>
+            <ActionIcon
+              variant="transparent"
+              color="red"
+              aria-label="Delete"
+              onClick={() => onDeleteTask(task.id)}
+            >
+              <IconTrash size={20} />
+            </ActionIcon>
+          </Table.Td>
+        </Table.Tr>
       )
-    }
-    if (status === 'loading') {
-      return <Loader size="xl" />
-    }
-    if (status === 'failed') {
-      return (
-        <Text size="lg" c="red">
-          Error fetching tasks: {error}
-        </Text>
-      )
-    }
-    if (status === 'succeeded' && tasks.length === 0) {
-      return <Text size="lg">You have no tasks yet.</Text>
-    }
-    return null
-  }
-
-  const content = renderStatusContent()
+    })
+  }, [tasks, onEditTask, onDeleteTask, dispatch, updateLoadingId])
 
   if (!isClient) {
-    // ... (client-side loading state)
     return (
-      <Stack align="center" justify="center" gap="md">
-        <Loader size="xl" />
-      </Stack>
-    )
-  }
-
-  if (content && !isAuthenticated) {
-    // ... (unauthenticated content)
-    return (
-      <Stack align="center" justify="center" gap="md">
-        {content}
+      <Stack className="min-h-100" align="center" justify="center" gap="md">
+        <Loader size="xl" type="bars" />
       </Stack>
     )
   }
 
   return (
-    <Stack align="center" justify="center" gap="md">
+    <Stack className="min-h-100" align="center" justify="center" gap="md">
       <Group className="w-full">
         <Select
           placeholder="All Tasks"
@@ -250,11 +195,10 @@ export default function TasksTable({
         />
         <Button onClick={onAddTask}>Add Task</Button>
       </Group>
-      <Table>
+      <Table className="min-h-130">
         <Table.Thead>
           <Table.Tr>
-            {/* ⭐️ Task Header (Sortable) */}
-            <Table.Th>
+            <Table.Th className="min-w-45">
               <UnstyledButton onClick={() => handleSort('title' as keyof Task)}>
                 <Group gap="xs">
                   <Text fw={500}>Task</Text>
@@ -262,8 +206,6 @@ export default function TasksTable({
                 </Group>
               </UnstyledButton>
             </Table.Th>
-
-            {/* ⭐️ Status Header (Sortable) */}
             <Table.Th>
               <UnstyledButton onClick={() => handleSort('status' as keyof Task)}>
                 <Group gap="xs">
@@ -272,13 +214,19 @@ export default function TasksTable({
                 </Group>
               </UnstyledButton>
             </Table.Th>
-
-            {/* Actions Header (Not Sortable) */}
             <Table.Th>Actions</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {status === 'succeeded' && tasks.length === 0 ? (
+          {fetchStatus === 'loading' && isAuthenticated ? (
+            <Table.Tr>
+              <Table.Td colSpan={3} style={{ textAlign: 'center' }}>
+                <Group className="min-h-100 m-auto" align="center" justify="center" gap="md">
+                  <Loader size="xl" type="dots" />
+                </Group>
+              </Table.Td>
+            </Table.Tr>
+          ) : fetchStatus === 'succeeded' && tasks.length === 0 ? (
             <Table.Tr>
               <Table.Td colSpan={3} style={{ textAlign: 'center' }}>
                 {statusFilter === 'ALL' && searchFilter.trim() === ''
@@ -287,7 +235,7 @@ export default function TasksTable({
               </Table.Td>
             </Table.Tr>
           ) : (
-            status === 'succeeded' && tasks.length > 0 && taskRows
+            fetchStatus === 'succeeded' && tasks.length > 0 && taskRows
           )}
         </Table.Tbody>
       </Table>

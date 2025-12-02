@@ -19,8 +19,10 @@ import {
 
 const initialState: TasksState = {
   tasks: [],
+  fetchStatus: 'idle',
   totalCount: 0,
   status: 'idle',
+  updateLoadingId: null,
   error: null,
   shouldRefetch: false
 }
@@ -80,42 +82,56 @@ const tasksSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchTasks.pending, (state) => {
-        state.status = 'loading'
+        state.fetchStatus = 'loading'
       })
       .addCase(fetchTasks.fulfilled, (state, action: PayloadAction<FetchTasksPayload>) => {
-        state.status = 'succeeded'
+        state.fetchStatus = 'succeeded'
         state.tasks = action.payload.tasks
         state.totalCount = action.payload.totalCount
         state.error = null
       })
       .addCase(fetchTasks.rejected, (state, action) => {
-        state.status = 'failed'
+        state.fetchStatus = 'failed'
         state.error = (action.payload as string) || 'Unknown error occurred.'
       })
-      .addCase(createTask.fulfilled, (state, action: PayloadAction<Task>) => {
-        state.tasks.unshift(action.payload)
-        state.totalCount += 1
+      .addCase(createTask.pending, (state) => {
+        state.status = 'loading'
+      })
+      .addCase(createTask.fulfilled, (state) => {
+        state.status = 'idle'
+        state.shouldRefetch = !state.shouldRefetch
       })
       .addCase(createTask.rejected, (state, action) => {
+        state.status = 'idle'
         state.error = action.payload!
       })
-      .addCase(updateTask.fulfilled, (state, action: PayloadAction<Task>) => {
-        const index = state.tasks.findIndex((task) => task.id === action.payload.id)
-        if (index !== -1) {
-          state.tasks[index] = action.payload
-        }
+      .addCase(updateTask.pending, (state, action) => {
+        state.updateLoadingId = action.meta.arg.id
+        state.status = 'loading'
+      })
+      .addCase(updateTask.fulfilled, (state) => {
+        state.updateLoadingId = null
+        state.status = 'succeeded'
+        state.shouldRefetch = !state.shouldRefetch
       })
       .addCase(updateTask.rejected, (state, action) => {
+        state.updateLoadingId = null
+        state.status = 'failed'
         state.error = action.payload!
+      })
+      .addCase(deleteTask.pending, (state) => {
+        state.status = 'loading'
       })
       .addCase(deleteTask.fulfilled, (state, action) => {
         const deletedTaskId = action.payload
         state.tasks = state.tasks.filter((task) => task.id !== deletedTaskId)
         state.totalCount -= 1
         state.shouldRefetch = !state.shouldRefetch
+        state.status = 'succeeded'
       })
       .addCase(deleteTask.rejected, (state, action) => {
         state.error = action.payload!
+        state.status = 'failed'
       })
       .addCase(setLogout, () => {
         return initialState

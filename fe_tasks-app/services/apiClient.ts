@@ -9,8 +9,12 @@ const apiClient = axios.create({
   }
 })
 
+const delay = (ms: number): Promise<unknown> => new Promise((resolve) => setTimeout(resolve, ms))
+
 apiClient.interceptors.request.use(
-  (config) => {
+  async (config) => {
+    await delay(800)
+
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
