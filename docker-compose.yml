@@ -61,6 +61,7 @@ services:
       NODE_ENV: production
       PORT: 3001
       USERS_DATABASE_URL: postgres://user:topSecretPassword123!!!!!@db:5432/users_db
+      TASKS_DATABASE_URL: postgres://user:topSecretPassword123!!!!!@db:5432/tasks_db
     depends_on:
       be_auth:
         condition: service_started
