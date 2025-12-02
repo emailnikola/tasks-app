@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { ClientProxy } from '@nestjs/microservices'
 import { firstValueFrom } from 'rxjs'
-import { Task } from '../../../../generated/prisma/client'
+import { Task } from '../../../../generated/prisma/task'
 
 @Injectable()
 export class TasksService {

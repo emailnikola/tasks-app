@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from './prisma/prisma.service'
-import { Task, Prisma } from '../../../generated/prisma/client'
+import { Task, Prisma } from '../../../generated/prisma/task'
 import type { PaginatedTasks } from '@app/common'
 
 @Injectable()

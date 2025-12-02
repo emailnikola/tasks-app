@@ -7,7 +7,7 @@ import {
   AUTH_PATTERNS
 } from '../../../../libs/common/src'
 import { firstValueFrom } from 'rxjs'
-import { User } from '../../../../generated/prisma/client'
+import { User } from '../../../../generated/prisma/user'
 
 @Controller('auth')
 export class AuthController {

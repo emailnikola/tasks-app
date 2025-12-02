@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common'
 import { MessagePattern, Payload } from '@nestjs/microservices'
 import { TasksService } from './tasks.service'
-import { Prisma } from '../../../generated/prisma'
+import { Prisma } from '../../../generated/prisma/task'
 
 interface TaskQueryPayload {
   userId: string

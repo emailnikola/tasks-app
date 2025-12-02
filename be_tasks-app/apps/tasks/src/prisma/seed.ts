@@ -1,6 +1,6 @@
 import { PrismaPg } from '@prisma/adapter-pg'
 import { randomUUID } from 'crypto'
-import { PrismaClient, Prisma } from '../../../../generated/prisma/client'
+import { PrismaClient, Prisma } from '../../../../generated/prisma/task'
 
 const ALICE_ID = 'f7c8d9c0-1a2b-3c4d-5e6f-7a8b9c0d1e2f'
 const TASK_COUNT = 200
