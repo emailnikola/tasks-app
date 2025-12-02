@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm install
 COPY . .
-RUN npm run build
+RUN npm run build:all
 
 # --- Stage 2: Production Stage (Runtime image) ---
 FROM node:20-alpine AS production
