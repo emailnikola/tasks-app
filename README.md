@@ -22,8 +22,6 @@ cd ..
 cd be_tasks-app
 .demo.env -> .env
 npm i
-npx prisma generate --schema apps/users/src/prisma/schema.prisma
-npx prisma generate --schema apps/tasks/src/prisma/schema.prisma
 cd ..
 
 docker-compose up --build
