@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm install
 COPY . .
-RUN npm run prisma:generate
+# RUN npm run prisma:generate
 RUN npm run build:all
 
 # --- Stage 2: Production Stage (Runtime image) ---

@@ -4,7 +4,6 @@ import {
   OnModuleDestroy,
   Logger
 } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
 import { PrismaClient } from '../../../../generated/prisma/task'
 import { PrismaPg } from '@prisma/adapter-pg'
 
@@ -15,11 +14,8 @@ export class PrismaService
 {
   private readonly logger = new Logger(PrismaService.name)
 
-  constructor(private configService: ConfigService) {
-    const databaseUrl = configService.get<string>('TASKS_DATABASE_URL')
-    if (!databaseUrl) {
-      throw new Error('TASKS_DATABASE_URL is not defined')
-    }
+  constructor() {
+    const databaseUrl = `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_TASKS}?schema=public`
     const adapter = new PrismaPg({ connectionString: databaseUrl })
     super({ adapter })
   }

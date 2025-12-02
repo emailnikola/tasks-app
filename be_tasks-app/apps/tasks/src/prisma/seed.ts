@@ -5,11 +5,7 @@ import { PrismaClient, Prisma } from '../../../../generated/prisma/task'
 const ALICE_ID = 'f7c8d9c0-1a2b-3c4d-5e6f-7a8b9c0d1e2f'
 const TASK_COUNT = 200
 
-const databaseUrl = process.env.TASKS_DATABASE_URL
-if (!databaseUrl) {
-  throw new Error('TASKS_DATABASE_URL is not defined for seeding')
-}
-
+const databaseUrl = `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_TASKS}?schema=public`
 const adapter = new PrismaPg({ connectionString: databaseUrl })
 const prisma = new PrismaClient({ adapter })
 

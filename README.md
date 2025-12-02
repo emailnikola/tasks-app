@@ -20,9 +20,10 @@ npm i
 cd ..
 
 cd be_tasks-app
-.demo.env -> .env
 npm i
 cd ..
+
+.demo.env -> .env
 
 docker-compose up --build
 

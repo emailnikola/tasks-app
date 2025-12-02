@@ -2,10 +2,7 @@ import { PrismaClient } from '../../../../generated/prisma/user'
 import * as bcrypt from 'bcrypt'
 import { PrismaPg } from '@prisma/adapter-pg'
 
-const databaseUrl = process.env.USERS_DATABASE_URL
-if (!databaseUrl) {
-  throw new Error('USERS_DATABASE_URL is not defined for seeding')
-}
+const databaseUrl = `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_USERS}?schema=public`
 const adapter = new PrismaPg({ connectionString: databaseUrl })
 const prisma = new PrismaClient({ adapter })
 

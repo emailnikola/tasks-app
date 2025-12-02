@@ -10,7 +10,7 @@ import { MicroserviceClientsModule } from 'libs/clients/microservice-clients.mod
     MicroserviceClientsModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env'
+      envFilePath: '../.env'
     })
   ],
   controllers: [UsersController],
