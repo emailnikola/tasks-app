@@ -11,41 +11,44 @@ Frontend: NextJS, MantineUI, Tailwind, SSR
 
 ```
 
-## RUN THE PROJECT - Docker
+## Develeop
 
 ```bash
 
-cd fe_tasks-app
-npm i
-cd ..
-
-cd be_tasks-app
-npm i
-cd ..
-
-.demo.env -> .env
-
-docker-compose up --build
-
-```
-
-## RUN without Docker
-
-```bash
-
-cd be_tasks-app
-npm i
 .demo.env -> .env
 Update .env
-npx prisma generate --schema apps/users/src/prisma/schema.prisma
-npx prisma generate --schema apps/tasks/src/prisma/schema.prisma
-Terminal 1 => npm run start app --watch
-Terminal 2 => npm run start users --watch
-Terminal 3 => npm run start tasks --watch
-Terminal 4 => npm run start auth --watch
+
+cd be_tasks-app
+npm i
+cd ..
+
+
+npm run prisma:reseed
+Terminal 1 => npm run start:dev app
+Terminal 2 => npm run start:dev users
+Terminal 3 => npm run start:dev tasks
+Terminal 4 => npm run start:dev auth
 
 cd fe_tasks-app
 Terminal 5 => npm run dev
+
+```
+
+## Production
+
+```bash
+
+.demo.env -> .env
+
+cd fe_tasks-app
+npm i
+cd ..
+
+cd be_tasks-app
+npm i
+cd ..
+
+docker-compose up --build
 
 ```
 
