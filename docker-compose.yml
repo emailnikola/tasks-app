@@ -7,15 +7,15 @@ services:
     restart: always
     environment:
       NODE_ENV: production
-      POSTGRES_DB: users_db
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: topSecretPassword123!!!!!
+      POSTGRES_DB: ${DB_USERS}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     networks:
       - prisma-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d users_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_USERS}"]
       interval: 5s
       timeout: 2s
       retries: 20
